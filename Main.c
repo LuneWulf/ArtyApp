@@ -1,21 +1,27 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "lib.c"
 #include <math.h>
+#include <stdbool.h>
 
-#define MAX_TYPESTORES 5
-#define MAX_TYPES 5
+// Additional #includes are located at line due to the functions in them using the MASTER struct.
+
+#define MAX_TYPES 25
 #define MAX_AMMO 5
 #define MAX_CHARGES 20
 
-#define MAX_GUNS 10;
-#define MAX_TARGETS 50;
+#define MAX_GUNS 10
+#define MAX_TARGETS 50
+
+#define MAX_GUN_GROUPS 10
+#define MAX_TARGET_GROUPS 10
 
 struct Ammo {
     char Name[50];
     double AirFriction;
+    int ChargeCount;
     long int Charge[MAX_CHARGES];
+    long int ChargeMaxRange[MAX_CHARGES];
 };
 
 struct Type {
@@ -24,18 +30,11 @@ struct Type {
     struct Ammo Ammo[MAX_AMMO];
 };
 
-struct TypeStorage {
-    int TypeCount;
-    struct Type Types[MAX_TYPES];
-};
-
 struct Gun {
     long int x;
     long int y;
     long int z;
     int Type;
-    int Ammo;
-    int Charge;
 };
 
 struct Target {
@@ -44,62 +43,115 @@ struct Target {
     long int z;
 };
 
+struct GunGroup {
+    int GunID[MAX_GUNS];
+};
+
+struct TargetGroup {
+    int TargetID[MAX_TARGETS];
+};
+
 struct MASTER {
-    int TypeStoreCount;
-    struct TypeStorage TypeStores[MAX_TYPESTORES];
+    int TypeCount;
+    struct Type Types[MAX_TYPES];
 
     int TargetCount;
-    struct Target Targets[MAX_TARGETS];
+    struct Target Target[MAX_TARGETS];
 
     int GunCount;
-    struct Gun Guns[MAX_GUNS];
+    struct Gun Gun[MAX_GUNS];
+
+    int GunGroupCount;
+    struct GunGroup GunGroup[MAX_GUN_GROUPS];
+
+    int TargetGroupCount;
+    struct TargetGroup TargetGroup[MAX_TARGET_GROUPS];
 } MASTER;
 
-/* OLD STRUCT
-struct Gun {
-    int id;
-    long int x;
-    long int y;
-    long int z;
-    struct Type *Type;
-};
-*/
+struct Settings {
+    int Ace3Drag;
+    int Ace3Weather;
+} Settings;
 
-long int StrToLI(char *string);
-
-int GridToCoordinates(char grid[], long int *x, long int *y);
-
-void DisMillsToCoordinates(int distance, int direction, char *CurrentGrid, long int *x, long int *y);
-
-long int MillsFromCoordinate(long int dx, long int dy);
-
-void GridsToDisMills(char *GridOne, char *GridTwo, long int *Distance, long int *Direction); 
-
-void AddAmmo(struct MASTER *MASTER, int TypeStore, int Type);
-
-int AddType(struct MASTER *MASTER, int TypeStore);
-
-void initStorages(struct MASTER *MASTER);
-
-void AddGun(long int x, long int y, long int Elevation, int type, int ammo, struct Gun *Storage);
-
-void RemoveGun(int id, struct Gun *Storage);
-
-void ListAllTypes(struct MASTER *MASTER);
-
-void ListAllAmmo(struct MASTER *MASTER, int TypeStore, int Type);
-
-// !PLACEHOLDER - NOT FINISHED!
-void QuickFireMission(struct Gun *GunStorage, struct Tgt *TgtStorage, int Angle);
+#include "include\Tools.c"
+#include "include\TypeManipulation.c"
+#include "include\TypeAccess.c"
+#include "include\GunManipulation.c"
+#include "include\TargetManipulation.c"
 
 int main(void) {
 
-    initStorages(&MASTER);
+    initStorage();
 
     int command;
 
-    struct Gun *GunStorage = NULL;
-    struct Tgt *TgtStorage = NULL;
+    introPage();
+
+    return 0;
+}
+
+void initStorage(void) {
+    
+    //Initialize all values to either 0, for numbers, or \0, for strings.
+    
+    MASTER.TypeCount = 0;
+
+    for (int Type = 0; Type < MAX_TYPES; Type++) {
+        strcpy(MASTER.Types[Type].Name, "\0");
+        MASTER.Types[Type].AmmoCount = 0;
+
+        for (int Ammo = 0; Ammo < MAX_AMMO; Ammo++) {
+            strcpy(MASTER.Types[Type].Ammo[Ammo].Name, "\0");
+            MASTER.Types[Type].Ammo[Ammo].AirFriction = 0;
+            MASTER.Types[Type].Ammo[Ammo].ChargeCount = 0;
+
+            for (int Charge = 0; Charge < MAX_CHARGES; Charge++) {
+                MASTER.Types[Type].Ammo[Ammo].Charge[Charge] = 0;
+                MASTER.Types[Type].Ammo[Ammo].ChargeMaxRange[Charge] = 0;
+            }
+        }
+    }
+
+    MASTER.TargetCount = 0;
+
+    for (int Target = 0; Target < MAX_TARGETS; Target++) {
+        
+        MASTER.Target[Target] = (struct Target) {0, 0, 0};
+    }
+
+    MASTER.GunCount = 0;
+
+    for (int Gun = 0; Gun < MAX_GUNS; Gun++) {
+        
+        MASTER.Gun[Gun] = (struct Gun) {0, 0, 0, 0};
+    }    
+
+    MASTER.GunGroupCount = 0;
+
+    for (int GunGroup = 0; GunGroup < MAX_GUN_GROUPS; GunGroup++) {
+        for (int GunID = 0; GunID < MAX_GUNS; GunID++) {
+            MASTER.GunGroup[GunGroup].GunID[GunID] = 0;
+        }
+    }
+
+    MASTER.TargetGroupCount = 0;
+
+    for (int TargetGroup = 0; TargetGroup < MAX_TARGET_GROUPS; TargetGroup++) {
+        for (int TargetID = 0; TargetID < MAX_TARGETS; TargetID++) {
+            MASTER.TargetGroup[TargetGroup].TargetID[TargetID] = 0;
+        }
+    }
+}
+
+void QuickFireMission(int Gun, int Target, int HighLowAngle) {
+
+}
+
+void FireMission(void) {
+
+}
+
+int introPage(void) {
 
     printf("\
                         WELCOME!\n\
@@ -134,556 +186,546 @@ int main(void) {
 
     printf("\n");
 
-    MAIN:
+    DirectoryPage();
+}
+
+int DirectoryPage(void) {
+
+    int command = -1;
 
     printf("\
-    ->->->->->->->->->-> MAIN PAGE <-<-<-<-<-<-<-<-<-<-\n\
+    ->->->->->->->->->-> DIRECTORY PAGE <-<-<-<-<-<-<-<-<-<-\n\
     \n\
     ><>< QUICK COMMANDS ><><\n\
     \n\
-    CREATE FIRE MISSION (1 TGT 1 GUN): 0\n\
+    CREATE QUICK FIRE MISSION (1 TGT 1 GUN): 1\n\
     \n\
     ><>< PAGE COMMANDS ><><\n\
     \n\
-    SETTINGS: 1\n\
-    GUNS: 2\n\
-    TGTS: 3\n\
+    SETTINGS: 2\n\
+    STORAGE: 3\n\
     FIRE MISSION: 4\n\
-    GUIDE: 5\n\n");
+    GUIDE: 5\n\
+    \n\
+    ><>< OTHER COMMANDS ><><\n\
+    SAVE STORAGE: 6\n\
+    SAVE STORAGE AND EXIT PROGRAM: 7\n\
+    EXIT PROGRAM WITHOUT SAVING: 8\n");
+    
 
-    RETRY:
-
-    printf("    ENTER COMMAND: ");
-    scanf("%d", &command);
-    printf("\n\n")
-
+    int command = EnterCommand(1, 8);
+    
     switch (command) {
-        case 0:
+        case 1: QuickFireMissionPage();
+        case 2: SettingsPage();
+        case 3: StoragePage()
+        case 4: FireMissionPage();
+        case 5: GuidePage();
+        case 6: Save();
+        case 7: 
+            Save();
+            abort();
+        case 8: abort();
+    }
+}
 
-            int GunID, TgtID, type;
+int QuickFireMissionPage(void) {
 
-            if (*GunStorage == NULL) {
+    int GunID, TgtID, type;
 
-                char Grid;
-                long int Elevation;
+    if (*GunStorage == NULL) {
 
-                RETURN_ONE:
+        char Grid;
+        long int Elevation;
 
-                printf("    NO GUNS STORED, ADD GUN TO USE:\n\n");
-                printf("    ENTER GRID (2 TO 10 DIGIT GRID): ");
-                scanf("%s", &Grid);
+        RETURN_ONE:
 
-                long int x, y;
-                int test = GridToCoordinates(Grid, &x, &y);
+        printf("    NO GUNS STORED, ADD GUN TO USE:\n\n");
+        printf("    ENTER GRID (2 TO 10 DIGIT GRID): ");
+        scanf("%s", &Grid);
 
-                if (test == 1) goto RETURN_ONE;
+        long int x, y;
+        int test = GridToCoordinates(Grid, &x, &y);
 
-                printf("    ENTER ELEVATION (METERS): ")
-                scanf("%ld", &Elevation)
-                printf("\n")
+        if (test == 1) goto RETURN_ONE;
 
-                while (Elevation > 8849 || Elevation < -10984) {
-                    printf("    ENTER ELEVATION (METERS): ")
-                    scanf("%ld", &Elevation)
-                    printf("\n")
+        printf("    ENTER ELEVATION (METERS): ")
+        scanf("%ld", &Elevation)
+        printf("\n")
 
-                    // Elevation cant be greater than Mt. Everet's or less than The Mariana Trench's...
-                    if (Elevation > 8849) {
-                        printf("    ERROR: ELEVATION TO HIGH, MUST NOT BE GREATER THAN 8849 M!");
-                    } else if (Elevation < -10984) {
-                        printf("    ERROR: ELEVATION TO LOW, MUST NOT BE LESS THAN -10984 M!")
-                    }
-                }
+        while (Elevation > 8849 || Elevation < -10984) {
+            printf("    ENTER ELEVATION (METERS): ")
+            scanf("%ld", &Elevation)
+            printf("\n")
 
-                if (MASTER.TypeStoreCount == 0) {
-                    AddType(&MASTER, 0);
-                } else {
-                    printf("    CHOOSE TYPE FROM LIST:\n\n");
+            // Elevation cant be greater than Mt. Everet's or less than The Mariana Trench's...
+            if (Elevation > 8849) {
+                printf("    ERROR: ELEVATION TO HIGH, MUST NOT BE GREATER THAN 8849 M!");
+            } else if (Elevation < -10984) {
+                printf("    ERROR: ELEVATION TO LOW, MUST NOT BE LESS THAN -10984 M!")
+            }
+        }
 
-                    ListAllTypes(&MASTER);
-                    
-                    RETURN_THREE:
+        if (MASTER.TypeCount == 0) {
+            AddType(0);
+        } else {
+            printf("    CHOOSE TYPE FROM LIST:\n\n");
 
-                    while (TypeStorage)
+            ListAllTypes();
+            
+            RETURN_THREE:
 
-
-                    while (type > count || type < 1)
-
-                    printf("    ENTER TYPE: ");
-                    scanf("%d", type);
-                    printf("\n\n")
-
-                    if (type > count || type < 1) {
-                        printf("    ERROR: TYPE DOES NOT EXIST!\n\n");
-                        goto RETURN_THREE;
-                    }
-
-                    printf("    CHOOSE AMMO FROM LIST:\n\n");
-
-                    for (int i = 0; *(TypeStorage + type - 1)->Ammo + i) != NULL; i++) {
-                        printf("    TYPE: %d,    NAME: %c\n", i + 1, *(TypeStorage + i).name);
-                        count++
-                    }
-
-                    //for (int i = 0; i < (sizeof(*(TypeStorage + type - 1)->ammo) - sizeof(char) - sizeof(double))/sizeof(struct Charge)) {
-                    //    prinf("    AMMO: %d,    NAME: %c\n", i + 1, *(TypeStorage + type - 1)->ammo.name);
-                    //}
+            while (TypeStorage)
 
 
-                }
+            while (type > count || type < 1)
 
+            printf("    ENTER TYPE: ");
+            scanf("%d", type);
+            printf("\n\n")
 
-
-                AddGun(Grid, Elevation, type, ammo, GunStorage)
-
-            } else {
-                
-                printf("    CHOOSE GUN FROM LIST:\n\n")
-                
-                int x, y;
-
-                for (i = 0; i < sizeof(GunStorage)/sizeof(struct Gun); i++) {
-                    GunID = *(GunStorage + i).id;
-                    x = *(GunStorage + i).x;
-                    y = *(GunStorage + i).y;
-                    type = *(GunStorage + i).Type;
-                    printf("    GUN %d:    GRID: %d%d    TYPE: %d\n", GunID, x, y, type)
-                }
-                printf("    ENTER GUN ID: ");
-                scanf("%d", GunID);
+            if (type > count || type < 1) {
+                printf("    ERROR: TYPE DOES NOT EXIST!\n\n");
+                goto RETURN_THREE;
             }
 
-            if (*TgtStorage == NULL) {
+            printf("    CHOOSE AMMO FROM LIST:\n\n");
 
-            } else {
-
+            for (int i = 0; *(TypeStorage + type - 1)->Ammo + i) != NULL; i++) {
+                printf("    TYPE: %d,    NAME: %c\n", i + 1, *(TypeStorage + i).name);
+                count++
             }
 
-            long int grid;
-            int x, y, z;
-            printf("ENTER TGT GRID: ");
-            scanf("%ld", &grid);
-            GridToCoordinates(tempGRID, &x, &y);
-            printf("")
+            //for (int i = 0; i < (sizeof(*(TypeStorage + type - 1)->ammo) - sizeof(char) - sizeof(double))/sizeof(struct Charge)) {
+            //    prinf("    AMMO: %d,    NAME: %c\n", i + 1, *(TypeStorage + type - 1)->ammo.name);
+            //}
 
 
-        case 5: goto GUIDE;
-        case 4: goto FIREMISSION;
-        case 3: goto TGTS;
-        case 2: goto GUNS;
-        case 1: goto SETTINGS;
-        case default:
-            printf("    !ERROR: UNKNOWN COMMAND!\n\n");
-            goto RETRY;
+        }
+
+
+
+        AddGun(Grid, Elevation, type)
+
+    } else {
+        
+        printf("    CHOOSE GUN FROM LIST:\n\n")
+        
+        int x, y;
+
+        for (i = 0; i < sizeof(GunStorage)/sizeof(struct Gun); i++) {
+            GunID = *(GunStorage + i).id;
+            x = *(GunStorage + i).x;
+            y = *(GunStorage + i).y;
+            type = *(GunStorage + i).Type;
+            printf("    GUN %d:    GRID: %d%d    TYPE: %d\n", GunID, x, y, type)
+        }
+        printf("    ENTER GUN ID: ");
+        scanf("%d", GunID);
     }
 
-    SETTINGS:
+    if (*TgtStorage == NULL) {
 
+    } else {
+
+    }
+
+    long int grid;
+    int x, y, z;
+    printf("ENTER TGT GRID: ");
+    scanf("%ld", &grid);
+    GridToCoordinates(tempGRID, &x, &y);
+    printf("")
+
+}
+
+int SettingsPage(void) {
+    
     printf("\
     ->->->->->->->->->-> SETTINGS <-<-<-<-<-<-<-<-<-<-\n\
     \n\
-    SETTINGS:\n\
+    ><>< SETTINGS AND THEIR COMMAND ID ><><\n\
     \n\
-    (1 FOR TRUE, 0 FOR FALSE)\n\
+    FORMAT: NAME, VALUE: COMMAND ID\n\
     \n\
-    1: ACE3 DRAG   =   %d\n\
-    2: ACE3 WEATHER    =   %d\n\
-    ")
-
-    GUNS:
-
-        GUNDATA:
-
-        TYPESAMMO:
-
-    TGTS:
-
-        TGTDATA:
-
-        GROUPS: //?possibly?
-
-    FIREMISSION:
-
-    GUIDE:
-
-    return 0;
-}
-
-long int StrToLI(char *string) {
-    int size = strlen(string);
-    long int number = 0;
-
-    for (int i = 0; i < size; i++) {
-        number = number + (long int) ((*(string + i) - 48) * power(10, size - i - 1));
-        //printf("number: %ld, added: %ld\n", number, (long int) ((*(string + i) - 48) * pow(10, size - i - 1)));
-        //printf("%f\n", power(10, size - i - 1));
-        //printf("size: %d\n", size);
-    }
-
-    return number;
-}
-
-int GridToCoordinates(char grid[], long int *x, long int *y) {
-
-    int size = strlen(grid);
-
-    //printf("size %d\n", size);
-
-    // is size even
-    float even = (float) size / (float) 2 - size / 2;
-    if (even != 0) {
-        char *temp = malloc(sizeof(char) * (size + 1));
-        temp[0] = '0';
-        for (int i = 0; i < size; i++) {
-            temp[i + 1] = grid[i];
-
-            //printf("%c %c\n", temp[i + 1], grid[i]);
-        }
-
-        //printf("%s\n", temp);
-
-        size++;
-        for (int i = 0; i < size; i++) {
-            grid[i] = temp[i];
-        }
-
-        //printf("%s\n", grid);
-    }
-
-    //printf("size %d\n", size);
+    VALUE FORMAT: 1 = TRUE, 0 = FALSE\n\
+    \n\
+    ACE3 DRAG,\t%d:\t1\n\
+    ACE3 WEATHER,\t%d:\t2\n\
+    \n\
+    \n\
+    ><>< OTHER COMMANDS ><><\n\
+    \n\
+    RETURN TO DIRECTORY PAGE: 3\n\n", Settings.Ace3Drag, Settings.Ace3Weather);
     
+    int command = EnterCommand(0, 2);
 
-    if (size > 10) {
-        printf("\n\nERROR: GRID OUT OF BOUNDS, MUST BE 10-DIGIT OR LOWER\n");
-        *x = -1;
-        return 1;
-    } else if (size < 0) {
-        printf("\n\nERROR: GRID OUT OF BOUNDS, MUST BE 2-DIGIT OR GREATER\n");
-        *x = -1;
-        return 1;
-    } else {
-        int middle = size / 2;
-        char *X = malloc(sizeof(char)*middle);
-        char *Y = malloc(sizeof(char)*middle);
-        for (int i = 0; i < size; i++) {
-            if (i < middle) {
-                *(X + i) = grid[i];
-            } else {
-                *(Y + i - middle) = grid[i];
-            }
-        }
-
-        *(X + middle) = '\0';
-        *(Y + middle) = '\0';
-
-        //printf("test\n");
-
-        //printf("%s, %s\n", X, Y);
-
-        //Assign x and y and scale such that its unit is in meters.
-        *x = StrToLI(X) * power(10, 5 - middle);
-        *y = StrToLI(Y) * power(10, 5 - middle);
-
-        //printf("x: %ld, y: %ld\n", *x, *y);
-        return 0;
+    switch (command) {
+        case 1: 
+            printf("    ENTER NEW VALUE FOR ACE3 DRAG: ");
+            scanf("%d", &Settings.Ace3Drag);
+            printf("\n");
+            SettingsPage();
+        case 2:
+            printf("    ENTER NEW VALUE FOR ACE3 WEATHER: ");
+            scanf("%d", &Settings.Ace3Weather);
+            printf("\n");
+            SettingsPage();
+        case 3: DirectoryPage();
     }
 }
 
-void DisMillsToCoordinates(int distance, int direction, char *CurrentGrid, long int *x, long int *y) {
-    float radians = (float) direction * M_PI / (float) (3200);
+int StoragePage(void) {
 
-    GridToCoordinates(CurrentGrid, x, y);
+    printf("\
+    ->->->->->->->->->-> STORAGE <-<-<-<-<-<-<-<-<-<-\n\
+    \n\
+    ><>< COMMANDS ><><\n\
+    \n\
+    TYPE STORAGE: 1\n\
+    GUN STORAGE: 2\n\
+    TARGET STORAGE: 3\n\
+    \n\
+    RETURN TO DIRECTORY PAGE: 4\n\n");
 
-    //printf("Radians: %f, pi: %f, direction: %ld\n", radians, M_PI, (direction * 3200));
-    //printf("cos: %f, sin: %f", cos(radians) * (double) distance, sin(radians) * (double) distance);
+    int command = EnterCommand(1, 4);
 
-    *x += round(cos(radians) * (double) distance);
-    *y += round(sin(radians) * (double) distance);
+    switch (command) {
+        case 1: TypeStoragePage();
+        case 2: GunStoragePage();
+        case 3: TargetStoragePage();
+        case 4: DirectoryPage();
+    }
 }
 
-long int MillsFromCoordinate(long int dx, long int dy) {
+int TypeStoragePage(void) {
     
-    long int mills = (atan((double) dy / (double) dx) * 6400) / (2 * M_PI);
+    printf("\
+    ->->->->->->->->->-> GUN TYPES <-<-<-<-<-<-<-<-<-<-\n\
+    \n\
+    ><>< GUN TYPES ><><\n\
+    \n");
 
-    if (dx < 0) {
-        if (mills < 0) {
-            mills += 6400;
-        } else {
-            mills += 3200;
-        }
-    } else if (dx > 0) {
-        if (mills < 0) {
-            mills += 3200;
+    if (MASTER.TypeCount == 0) {
+        printf("    NO GUN TYPES DEFINED\n");
+
+        printf("\n");
+
+        printf("    ><>< COMMANDS ><><\n\n");
+        printf("    ADD GUN TYPE: 1\n\n");
+        printf("    RETURN TO DIRECTORY PAGE: 2\n");
+
+        int command = EnterCommand(1, 2);
+
+        switch (command) {
+            case 1: 
+                AddType();
+                StoragePage();
+            case 2: DirectoryPage();
         }
     } else {
-        if (mills < 0) {
-            mills += 6400;
-        }
-    }
 
-    return mills;
-}
+        ListAllTypes("ListAllAmmo");
 
-void GridsToDisMills(char *GridOne, char *GridTwo, long int *Distance, long int *Direction) {
-    long int x_1, x_2, y_1, y_2;
+        printf("\n");
 
-    GridToCoordinates(GridOne, &x_1, &y_1);
-    GridToCoordinates(GridTwo, &x_2, &y_2);
+        printf("    ><>< COMMANDS ><><\n");
+        printf("\n");
+        printf("    ADD GUN TYPE: 1\n");
+        printf("    REMOVE GUN TYPE: 2\n");
+        printf("    EDIT GUN TYPE NAME: 3\n");
+        printf("    ADD AMMO: 4\n");
+        printf("    EDIT AMMO NAME: 5\n");
+        printf("    EDIT AMMO AIR FRICTION: 6\n");
+        printf("    ADD AMMO CHARGE: 7\n");
+        printf("    EDIT AMMO CHARGE: 8\n");
+        printf("\n");
+        printf("    RETURN TO STORAGE PAGE: 9\n");
+        printf("    RETURN TO DIRECTORY PAGE: 10\n");
 
-    *Distance = hypot((double) (x_1 - x_2), (double) (y_1 - y_2));
+        int command = EnterCommand(1, 10);
 
-    *Direction = MillsFromCoordinate(x_1 - x_2, y_1 - y_2);
-} 
+        switch (command) {
+            case 1: // Add gun type
+                AddType();
+                TypeStoragePage();
+            case 2: // Remove gun type
+            case 3: // Edit gun type name
+                int type = EnterType();
 
-void AddAmmo(struct MASTER *MASTER, int TypeStore, int Type) {
-    
-    double AirFriction;
+                char TypeName;
 
-    char AmmoName[50];
+                while (true) {
+                    printf("    ENTER NEW TYPE NAME (MAX 50 CHARACTERS): ");
+                    fgets(TypeName, sizeof(TypeName), stdin);
 
-    printf("    ENTER AMMO NAME: ");
-    fgets(AmmoName, sizeof(AmmoName), stdin);
+                    size_t len = strlen(TypeName);
+                    if (len > 0 && TypeName[len - 1] == '\n') {
+                        TypeName[len - 1] = '\0';
+                    }
 
-    size_t len = strlen(AmmoName);
-    if (len > 0 && AmmoName[len - 1] == '\n') {
-        AmmoName[len - 1] = '\0';
-    }
+                    printf("    NEW STORED TYPE NAME: %s\n", TypeName);
+                    pritnf("    IS THE NEW STORED NAME CORRECT? (Y/N): ");
+                    scanf("%c", &Answer);
+                    printf("\n");
 
-    strcpy(MASTER->TypeStores[TypeStore].Types[MASTER->TypeStores[TypeStore].TypeCount].Ammo[MASTER->TypeStores[TypeStore].Types[Type].AmmoCount].Name, AmmoName);
-
-    ERRORAIRFRICTION:
-
-    printf("    ENTER AMMO AIR FRICTION: ");
-    scanf("%lf", &AirFriction);
-
-    if (AirFriction > 0) {
-        printf("    ERROR: AIR FRICTION MUST BE LESS THAN OR EQUAL TO 0\n");
-        goto ERRORAIRFRICTION;
-    }
-
-    MASTER->TypeStores[TypeStore].Types[Type].Ammo[MASTER->TypeStores[TypeStore].Types[Type].AmmoCount].AirFriction = AirFriction;
-
-    int ChargeCount;
-
-    printf("\n    NOW DEFINE CHARGE VELOCITIES, MAX 20 CHARGES!\n");
-    printf("    TO STOP DEFINING CHARGES ENTER -1 INSTEAD OF A VELOCITY\n");
-    printf("    MINIMUM OF 1 CHARGE:\n\n");
-
-    for (int i = 0; i < 20; i++, ChargeCount++) {
-        
-        long int TempVel = 0;
-
-        ERRORMUZVEL:
-
-        printf("    ENTER CHARGE %d MUZZLE VELOCITY: ", i+1);
-        scanf("%ld", &TempVel);
-
-        if (i != 0 && TempVel == -1) {
-            break;
-        } else if (TempVel <= 0) {
-            printf("    ERROR: INVALID CHARGE MUZZLE VELOCITY!\n");
-            goto ERRORMUZVEL;
-        }
-
-        MASTER->TypeStores[TypeStore].Types[Type].Ammo[MASTER->TypeStores[TypeStore].Types[Type].AmmoCount].Charge[i] = TempVel;
-    }
-
-    MASTER->TypeStores[TypeStore].Types[Type].AmmoCount++;
-}
-
-int AddType(struct MASTER *MASTER, int TypeStore) {
-
-    
-    //Check if storage is full then check the next.
-
-    while (MASTER->TypeStores[TypeStore].TypeCount >= 5 && TypeStore < MAX_TYPESTORES) {
-        if (MASTER->TypeStores[TypeStore].TypeCount >= 5) {
-            TypeStore++;
-        }
-    }
-
-    if (TypeStore == MAX_TYPESTORES) {
-        return -1;
-    }
-
-    char TypeName[50];
-
-    printf("    ENTER TYPE NAME: ");
-    fgets(TypeName, sizeof(TypeName), stdin);
-
-    size_t len = strlen(TypeName);
-    if (len > 0 && TypeName[len - 1] == '\n') {
-        TypeName[len - 1] = '\0';
-    }
-
-    strcpy(MASTER->TypeStores[TypeStore].Types[MASTER->TypeStores[TypeStore].TypeCount].Name, TypeName);
-
-    printf("\n    DEFINE A NEW AMMO TYPE FOR THE NEW TYPE:\n");
-
-    AddAmmo(MASTER, MASTER->TypeStores[TypeStore].TypeCount, MASTER->TypeStoreCount);
-
-    char Answer;
-
-    printf("\n    DO YOU WISH TO ADD MORE AMMO TYPES? (MAX 5 AMMO TYPES PER TYPE) (Y/N): ");
-    scanf(" %c", &Answer);
-
-    for (int i = 0; i < 4 && Answer == 'Y'; i++) {
-        
-        while(getchar() != '\n');
-        AddAmmo(MASTER, MASTER->TypeStores[TypeStore].TypeCount, MASTER->TypeStoreCount);
-
-        ERRORANSWERYN:
-
-        printf("    DO YOU WISH TO ADD ANOTHER AMMO TYPE? (Y/N): ");
-        scanf(" %c", &Answer);
-
-        if (Answer != 'Y' && Answer != 'N') {
-            printf("    ERROR: ANSWER WAS NOT Y OR N!\n\n");
-            goto ERRORANSWERYN;            
-        }
-    }
-
-    MASTER->TypeStoreCount++;
-    MASTER->TypeStores[TypeStore].TypeCount++;
-
-}
-
-void initStorages(struct MASTER *MASTER) {
-    MASTER->TypeStoreCount = 0;
-
-    for (int TypeStore = 0; TypeStore < MAX_TYPESTORES; TypeStore++) {
-        MASTER->TypeStores[TypeStore].TypeCount = 0;
-
-        for (int Type = 0; Type < MAX_TYPES; Type++) {
-            strcpy(MASTER->TypeStores[TypeStore].Types[Type].Name, "\0");
-            MASTER->TypeStores[TypeStore].Types[Type].AmmoCount = 0;
-
-            for (int Ammo = 0; Ammo < MAX_AMMO; Ammo++) {
-                strcpy(MASTER->TypeStores[TypeStore].Types[Type].Ammo[Ammo].Name, "\0");
-                MASTER->TypeStores[TypeStore].Types[Type].Ammo[Ammo].AirFriction = 0;
-
-                for (int Charge = 0; Charge < MAX_CHARGES; Charge++) {
-                    MASTER->TypeStores[TypeStore].Types[Type].Ammo[Ammo].Charge[Charge] = 0;
+                    if (Answer == 'Y') {
+                        break;
+                    }
                 }
-            }
+
+                MASTER.Types[type - 1].Name = TypeName;
+                TypeStoragePage();
+            case 4: // Add ammo type to gun type
+                int type = EnterType();
+                AddAmmo(type);
+
+                char Answer;
+
+                while (true) {
+                    
+                    printf("    DO YOU WISH TO ADD ANOTHER AMMO TYPE TO THIS GUN TYPE? (Y/N): ");
+                    scanf("%c", &Answer);
+
+                    if (Answer == 'Y') {
+                        AddAmmo(type);
+                    } else if (Answer == 'N') {
+                        break;
+                    } else {
+                        printf("    ERROR: ANSWER WAS NOT Y OR N!\n\n");
+                    }   
+                }
+
+                TypeStoragePage();
+            case 5: // Edit ammo type name
+                int type = EnterType();
+                int ammo = EnterAmmo();
+
+                char AmmoName[50];
+
+                while (true) {
+                    printf("    ENTER NEW AMMO TYPE NAME (MAX 50 CHARACTERS): ");
+                    fgets(AmmoName, sizeof(AmmoName), stdin);
+
+                    size_t len = strlen(AmmoName);
+                    if (len > 0 && AmmoName[len - 1] == '\n') {
+                        AmmoName[len - 1] = '\0';
+                    }
+
+                    printf("    NEW STORED AMMO TYPE NAME: %s\n", AmmoName);
+                    pritnf("    IS THE NEW STORED NAME CORRECT? (Y/N): ");
+                    scanf("%c", &Answer);
+                    printf("\n");
+
+                    if (Answer == 'Y') {
+                        break;
+                    }
+                }
+
+                MASTER.Types[type - 1].Ammo[ammo - 1].Name = AmmoName;
+                
+                TypeStoragePage();
+            case 6: // Edit ammo type air friction
+                int type = EnterType();
+                int ammo = EnterAmmo(type);
+
+                printf("    ENTER NEW AIR FRICTION VALUE: ");
+                scanf("%lf", &MASTER.Types[type - 1].Ammo[ammo - 1].AirFriction);
+                printf("\n");
+
+                TypeStoragePage();
+            case 7: // Add charge to ammo type
+                int type = EnterType();
+                int ammo = EnterAmmo(type);
+
+                char Answer;
+
+                int test = AddCharge(type, ammo);
+
+                while (true) {
+
+                    // Charge limit exceeded error
+                    if (test == -1) {
+                        TypeStoragePage();
+                    }
+
+                    printf("    DO YOU WISH TO ADD ANOTHER CHARGE? (MAX %d) (Y/N): ", MAX_CHARGES);
+                    scanf("%c", &Answer);
+                    printf("\n");
+
+                    if (&Answer == 'N') {
+                        break;
+                    } else if (&Answer == 'Y') {
+                        test = AddCharge(type, ammo);
+                    } else {
+                        printf("    ERROR: ANSWER WAS NOT Y OR N!\n\n");
+                    }
+
+                }
+
+                TypeStoragePage();
+            case 8: // Edit ammo type charge
+                int type = EnterType();
+                int ammo = EnterAmmo(type);
+                int charge;
+
+                while (true) {
+                    printf("    ENTER CHARGE: ");
+                    scanf("%d", &charge);
+                    printf("\n");
+
+                    if (charge > 0 && charge <= MASTER.Types[type - 1].Ammo[ammo - 1].ChargeCount) {
+                        break;
+                    } else {
+                        printf("    ERROR: CHARGE NOT DEFINED\n\n");
+                    }
+                }
+
+                printf("    ENTER NEW MUZZLE VELOCITY FOR CHARGE %d: ", charge);
+                scanf("%lf", &MASTER.Types[type - 1].Ammo[ammo - 1].Charge[charge - 1]);
+
+                TypeStoragePage();
+            case 9: // Return to storage page
+                StoragePage();
+            case 10: // Return to directory page
+                DirectoryPage();
         }
     }
 }
 
-void AddGun(long int x, long int y, long int Elevation, int type, int ammo, struct Gun *Storage) {
-
-    int gunAmount = sizeof(*Storage)/sizeof(struct Gun) + 1;
-
-    struct Gun *temp = malloc(sizeof(struct Gun) * (gunAmount - 1));
-
-    for (int i = 0; i < (gunAmount - 1); i++) {
-        temp[i].id = Storage[i].id;
-        temp[i].x = Storage[i].x;
-        temp[i].y = Storage[i].y;
-        temp[i].z = Storage[i].z;
-        temp[i].type = Storage[i].type;
-        temp[i].ammo = Storage[i].ammo;
-    }
-
-    void *test = realloc(Storage, sizeof(struct Gun) * gunAmount);
-
-    if (test == NULL) {
-        printf("    ERROR: REALLOC FAILED L. 169");
-    }
-
-    for (int i = 0; i < (gunAmount - 1); i++) {
-        Storage[i].id = temp[i].id;
-        Storage[i].x = temp[i].x;
-        Storage[i].y = temp[i].y;
-        Storage[i].z = temp[i].z;
-        Storage[i].type = temp[i].type;
-        Storage[i].ammo = temp[i].ammo;  
-    }
-
-    free(temp);
-
-    Storage[gunAmount - 1].id = gunAmount;
-    Storage[gunAmount - 1].x = x;
-    Storage[gunAmount - 1].y = y;
-    Storage[gunAmount - 1].z = Elevation;
-    Storage[gunAmount - 1].type = type;
-    Storage[gunAmount - 1].ammo = type;
-}
-
-void RemoveGun(int id, struct Gun *Storage) {
-    int size = sizeof(Storage)/sizeof(struct Gun);
+int GunStoragePage(void) {
     
-    struct Gun *temp = malloc(sizeof(struct Gun) * (size - 1));
+    printf("\
+    ->->->->->->->->->-> GUNS <-<-<-<-<-<-<-<-<-<-\n\
+    \n\
+    ><>< GUNS ><><\n\
+    \n");
 
-    for (int i = 0, n = 0; i < size; i++) {
-        if (i != id) {
-            temp[n].id = n;
-            temp[n].x = Storage[i].x;
-            temp[n].y = Storage[i].y;
-            temp[n].z = Storage[i].z;
-            temp[n].type = Storage[i].type;
-            temp[n].ammo = Storage[i].ammo;
+    if (MASTER.TypeCount == 0) {
+        printf("    NO GUN TYPES ARE DEFINED THEREFORE NO GUNS\n");
+        printf("    ARE DEFINED NOR CAN NEW GUNS BE DEFINED\n");
+        printf("\n");
+        printf("    ><>< COMMANDS ><><\n\n");
+        printf("    GO TO TYPE STORAGE PAGE: 1");
+        printf("    RETURN TO DIRECTORY PAGE: 2\n");
 
-            n++;
+        int command = EnterCommand(1, 2);
+
+        switch (command) {
+            case 1: 
+                TypeStoragePage();
+            case 2:
+                DirectoryPage();
         }
-    }
+    } else if (MASTER.GunCount == 0) {
 
-    void *test = realloc(Storage, sizeof(struct Gun) * (size - 1));
+        printf("    NO GUNS DEFINED\n");
+        printf("\n");
+        printf("    ><>< COMMANDS ><><\n\n");
+        printf("    ADD GUN: 1\n");
+        printf("    RETURN TO STORAGE PAGE: 2\n");
+        printf("    RETURN TO DIRECTORY PAGE: 3\n");
 
-    if (test == NULL) {
-        printf("    ERROR: REALLOC FAILED L. 208");
-    }
+        int command = EnterCommand(1, 2);
 
-    for (int i = 0; i < size - 1; i++) {
-        Storage[i].id = temp[i].id;
-        Storage[i].x = temp[i].x;
-        Storage[i].y = temp[i].y;
-        Storage[i].z = temp[i].z;
-        Storage[i].type = temp[i].type;
-        Storage[i].ammo = temp[i].ammo;    
-    }
-
-    free(temp);
-}
-
-void ListAllTypes(struct MASTER *MASTER) {
-
-    if (MASTER->TypeStores[0].TypeCount == 0) {
-        printf("    NO TYPES DEFINED\n\n");
-        return;
-    }
-
-    for (int TypeStorage = 0; TypeStorage < MAX_TYPESTORES && MASTER->TypeStores[TypeStorage].TypeCount != 0; TypeStorage++) {
-        printf("----TYPESTORAGE ID: %d\n\n", TypeStorage + 1);
-
-        for (int Type = 0; Type < MAX_TYPES && MASTER->TypeStores[TypeStorage].Types[Type].AmmoCount != 0; Type++) {
-            printf("    TYPE NAME: %s,\tTYPE ID: %d\n", MASTER->TypeStores[TypeStorage].Types[Type].Name, Type + 1);
+        switch (command) {
+            case 1:
+                AddGun();
+            case 2: 
+                TypeStoragePage();
+            case 3:
+                DirectoryPage();
         }
-    }
-
-    printf("\n");
-}
-
-void ListAllAmmo(struct MASTER *MASTER, int TypeStore, int Type) {
-
-    if (MASTER->TypeStores[TypeStore].Types[Type].AmmoCount == 0) {
-        printf("    NO AMMO DEFINED\n");
-        return;
-    }
-
-    for (int Ammo = 0; Ammo < MASTER->TypeStores[TypeStore].Types[Type].AmmoCount; Ammo++) {
-        printf("    AMMO NAME: %s, AMMO ID: %d, AMMO AIR FRICTION: %lf, CHARGES:\n", MASTER->TypeStores[TypeStore].Types[Type].Ammo[Ammo].Name, Ammo + 1, MASTER->TypeStores[TypeStore].Types[Type].Ammo[Ammo].AirFriction);
+    } else {
         
-        for (int Charge = 0; Charge < MAX_CHARGES && MASTER->TypeStores[TypeStore].Types[Type].Ammo[Ammo].Charge[Charge] != 0; Charge++) {
-            printf("        CHARGE: %d, VELOCITY: %ld\n", Charge + 1, MASTER->TypeStores[TypeStore].Types[Type].Ammo[Ammo].Charge[Charge]);
+        for (int Gun = 0; Gun < MASTER.GunCount; Gun++) {
+            printf("    GUN %d:    TYPE: %c,    GRID: %ld%ld,    ELEVATION: %ld\n", Gun + 1, MASTER.Types[MASTER.Gun[Gun].Type].Name, MASTER.Gun[Gun].x, MASTER.Gun[Gun].y, MASTER.Gun[Gun].z);
         }
 
         printf("\n");
+
+        int command;
+
+        if (MASTER.GunCount == MAX_GUNS) {
+            printf("    ><>< COMMANDS ><><\n\n");
+            printf("    REMOVE GUN: 1\n");
+            printf("    EDIT GUN GRID: 2\n");
+            printf("    EDIT GUN ELEVATION: 3\n");
+            printf("    EDIT GUN TYPE: 4\n")
+            printf("    RETURN TO STORAGE PAGE: 5\n");
+            printf("    RETURN TO DIRECTORY PAGE: 6\n");
+            printf("\n");
+
+            command = EnterCommand(1, 6) + 1;
+        } else {
+            printf("    ><>< COMMANDS ><><\n\n");
+            printf("    ADD GUN: 1\n");
+            printf("    REMOVE GUN: 2\n");
+            printf("    EDIT GUN GRID: 3\n");
+            printf("    EDIT GUN ELEVATION: 4\n");
+            printf("    EDIT GUN TYPE: 5\n")
+            printf("    RETURN TO STORAGE PAGE: 6\n");
+            printf("    RETURN TO DIRECTORY PAGE: 7\n");
+            printf("\n");
+
+            command = EnterCommand(1, 7);
+        }
+
+        switch (command) {
+            case 1: // Add gun
+                AddGun();
+                GunStoragePage();
+            case 2: // Remove gun
+                RemoveGun();
+                GunStoragePage();
+            case 3: // Edit gun grid
+                int GunID = EnterGunID();
+
+                char Grid[10];
+                char Answer;
+
+                while (true) {
+                    printf("    ENTER NEW GRID FOR GUN %d (MAX 10 DIGITS, MIN 2 DIGITS): ", GunID);
+                    scanf("%10c", &Grid);
+                    printf("\n");
+
+                    printf("    CONFIRM GRID %c IS CORRECT (Y/N): ", Grid);
+                    scanf("%c", &Answer);
+
+                    if (Answer == 'Y') {
+                        break;
+                    } else if (Answer != 'N') {
+                        printf("    ERROR: ANSWER WAS NOT Y OR N!\n\n");
+                    }
+                }
+
+                long int x, y;
+
+                GridToCoordinates(Grid, &x, &y);
+
+                MASTER.Gun[GunID - 1] = (struct Gun) {x, y, MASTER.Gun[GunID - 1].z, MASTER.Gun[GunID - 1].type};
+
+                GunStoragePage();
+            case 4: // Edit gun elevation
+
+            case 5: // Edit gun type
+
+            case 6: // Return to storage page
+                TypeStoragePage();
+            case 7: // Return to directory page
+                DirectoryPage();
+        }
     }
+}
+
+int TargetStoragePage(void) {
 
 }
 
-// !PLACEHOLDER - NOT FINISHED!
-void QuickFireMission(struct Gun *GunStorage, struct Tgt *TgtStorage, int Angle) {
+int FireMissionPage(void) {
+
+}
+
+int GuidePage(void) {
 
 }
