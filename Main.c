@@ -4,7 +4,7 @@
 #include <math.h>
 #include <stdbool.h>
 
-// Additional #includes are located at line due to the functions in them using the MASTER struct.
+// Additional #includes are located at line 76 due to the functions in them using the MASTER struct.
 
 #define MAX_TYPES 25
 #define MAX_AMMO 5
