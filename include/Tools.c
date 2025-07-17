@@ -25,15 +25,25 @@ float power(float x, int y) {
    return x;
 }
 
+// Converts a string to the sum of the characters decimal value
+int StrToInt(char *string) {
+
+    int number = 0;
+
+    for (int i = 0; i < strlen(string); i++) {
+        number += (int) *(string + i);
+    }
+
+    return number;
+}
+
+// Converts a string of numbers to a long integer
 long int StrToLI(char *string) {
     int size = strlen(string);
     long int number = 0;
 
     for (int i = 0; i < size; i++) {
         number = number + (long int) ((*(string + i) - 48) * power(10, size - i - 1));
-        //printf("number: %ld, added: %ld\n", number, (long int) ((*(string + i) - 48) * pow(10, size - i - 1)));
-        //printf("%f\n", power(10, size - i - 1));
-        //printf("size: %d\n", size);
     }
 
     return number;
@@ -43,8 +53,6 @@ int GridToCoordinates(char grid[], long int *x, long int *y) {
 
     int size = strlen(grid);
 
-    //printf("size %d\n", size);
-
     // is size even
     float even = (float) size / (float) 2 - size / 2;
     if (even != 0) {
@@ -52,22 +60,13 @@ int GridToCoordinates(char grid[], long int *x, long int *y) {
         temp[0] = '0';
         for (int i = 0; i < size; i++) {
             temp[i + 1] = grid[i];
-
-            //printf("%c %c\n", temp[i + 1], grid[i]);
         }
-
-        //printf("%s\n", temp);
 
         size++;
         for (int i = 0; i < size; i++) {
             grid[i] = temp[i];
         }
-
-        //printf("%s\n", grid);
     }
-
-    //printf("size %d\n", size);
-    
 
     if (size > 10) {
         printf("\n\nERROR: GRID OUT OF BOUNDS, MUST BE 10-DIGIT OR LOWER\n");
@@ -92,15 +91,10 @@ int GridToCoordinates(char grid[], long int *x, long int *y) {
         *(X + middle) = '\0';
         *(Y + middle) = '\0';
 
-        //printf("test\n");
-
-        //printf("%s, %s\n", X, Y);
-
         //Assign x and y and scale such that its unit is in meters.
         *x = StrToLI(X) * power(10, 5 - middle);
         *y = StrToLI(Y) * power(10, 5 - middle);
-
-        //printf("x: %ld, y: %ld\n", *x, *y);
+       
         return 0;
     }
 }
@@ -109,9 +103,6 @@ void DisMillsToCoordinates(int distance, int direction, char *CurrentGrid, long 
     float radians = (float) direction * M_PI / (float) (3200);
 
     GridToCoordinates(CurrentGrid, x, y);
-
-    //printf("Radians: %f, pi: %f, direction: %ld\n", radians, M_PI, (direction * 3200));
-    //printf("cos: %f, sin: %f", cos(radians) * (double) distance, sin(radians) * (double) distance);
 
     *x += round(cos(radians) * (double) distance);
     *y += round(sin(radians) * (double) distance);
