@@ -3,8 +3,9 @@
 #include <stdlib.h>
 #include <math.h>
 #include <stdbool.h>
+//#include "raylib\raylib\src\raylib.h"
 
-// Additional #includes are located at line 76 due to the functions in them using the MASTER struct.
+// Additional #includes are located at line due to the functions in them using the MASTER struct.
 
 #define MAX_TYPES 25
 #define MAX_AMMO 5
@@ -79,69 +80,7 @@ struct Settings {
 #include "include\GunManipulation.c"
 #include "include\TargetManipulation.c"
 
-int main(void) {
-
-    initStorage();
-
-    int command;
-
-    introPage();
-
-    return 0;
-}
-
-void initStorage(void) {
-    
-    //Initialize all values to either 0, for numbers, or \0, for strings.
-    
-    MASTER.TypeCount = 0;
-
-    for (int Type = 0; Type < MAX_TYPES; Type++) {
-        strcpy(MASTER.Types[Type].Name, "\0");
-        MASTER.Types[Type].AmmoCount = 0;
-
-        for (int Ammo = 0; Ammo < MAX_AMMO; Ammo++) {
-            strcpy(MASTER.Types[Type].Ammo[Ammo].Name, "\0");
-            MASTER.Types[Type].Ammo[Ammo].AirFriction = 0;
-            MASTER.Types[Type].Ammo[Ammo].ChargeCount = 0;
-
-            for (int Charge = 0; Charge < MAX_CHARGES; Charge++) {
-                MASTER.Types[Type].Ammo[Ammo].Charge[Charge] = 0;
-                MASTER.Types[Type].Ammo[Ammo].ChargeMaxRange[Charge] = 0;
-            }
-        }
-    }
-
-    MASTER.TargetCount = 0;
-
-    for (int Target = 0; Target < MAX_TARGETS; Target++) {
-        
-        MASTER.Target[Target] = (struct Target) {0, 0, 0};
-    }
-
-    MASTER.GunCount = 0;
-
-    for (int Gun = 0; Gun < MAX_GUNS; Gun++) {
-        
-        MASTER.Gun[Gun] = (struct Gun) {0, 0, 0, 0};
-    }    
-
-    MASTER.GunGroupCount = 0;
-
-    for (int GunGroup = 0; GunGroup < MAX_GUN_GROUPS; GunGroup++) {
-        for (int GunID = 0; GunID < MAX_GUNS; GunID++) {
-            MASTER.GunGroup[GunGroup].GunID[GunID] = 0;
-        }
-    }
-
-    MASTER.TargetGroupCount = 0;
-
-    for (int TargetGroup = 0; TargetGroup < MAX_TARGET_GROUPS; TargetGroup++) {
-        for (int TargetID = 0; TargetID < MAX_TARGETS; TargetID++) {
-            MASTER.TargetGroup[TargetGroup].TargetID[TargetID] = 0;
-        }
-    }
-}
+char *NextPage = NULL;
 
 void QuickFireMission(int Gun, int Target, int HighLowAngle) {
 
@@ -151,7 +90,9 @@ void FireMission(void) {
 
 }
 
-int introPage(void) {
+char *introPage(void) {
+
+    char ThrowAway;
 
     printf("\
                         WELCOME!\n\
@@ -182,16 +123,14 @@ int introPage(void) {
     \n");
 
     printf("    PRESS ENTER TO CONTINUE");
-    scanf("%c");
+    scanf("%c", &ThrowAway);
 
     printf("\n");
 
-    DirectoryPage();
+    return "Directory";
 }
 
-int DirectoryPage(void) {
-
-    int command = -1;
+char *DirectoryPage(void) {
 
     printf("\
     ->->->->->->->->->-> DIRECTORY PAGE <-<-<-<-<-<-<-<-<-<-\n\
@@ -216,66 +155,64 @@ int DirectoryPage(void) {
     int command = EnterCommand(1, 8);
     
     switch (command) {
-        case 1: QuickFireMissionPage();
-        case 2: SettingsPage();
-        case 3: StoragePage()
-        case 4: FireMissionPage();
-        case 5: GuidePage();
+        case 1: return "QuickFireMission";
+        case 2: return "Settings";
+        case 3: return "Storage";
+        case 4: return "FireMission";
+        case 5: return "Guide";
         case 6: Save();
         case 7: 
             Save();
-            abort();
-        case 8: abort();
+            exit(0);
+        case 8: exit(0);
     }
 }
 
-int QuickFireMissionPage(void) {
+/* char *QuickFireMissionPage(void) {
 
     int GunID, TgtID, type;
 
     if (*GunStorage == NULL) {
 
-        char Grid;
+        char Grid[10];
         long int Elevation;
 
         RETURN_ONE:
 
         printf("    NO GUNS STORED, ADD GUN TO USE:\n\n");
         printf("    ENTER GRID (2 TO 10 DIGIT GRID): ");
-        scanf("%s", &Grid);
+        scanf("%10s", &Grid);
 
         long int x, y;
         int test = GridToCoordinates(Grid, &x, &y);
 
         if (test == 1) goto RETURN_ONE;
 
-        printf("    ENTER ELEVATION (METERS): ")
-        scanf("%ld", &Elevation)
-        printf("\n")
+        printf("    ENTER ELEVATION (METERS): ");
+        scanf("%ld", &Elevation);
+        printf("\n");
 
         while (Elevation > 8849 || Elevation < -10984) {
-            printf("    ENTER ELEVATION (METERS): ")
-            scanf("%ld", &Elevation)
-            printf("\n")
+            printf("    ENTER ELEVATION (METERS): ");
+            scanf("%ld", &Elevation);
+            printf("\n");
 
             // Elevation cant be greater than Mt. Everet's or less than The Mariana Trench's...
             if (Elevation > 8849) {
                 printf("    ERROR: ELEVATION TO HIGH, MUST NOT BE GREATER THAN 8849 M!");
             } else if (Elevation < -10984) {
-                printf("    ERROR: ELEVATION TO LOW, MUST NOT BE LESS THAN -10984 M!")
+                printf("    ERROR: ELEVATION TO LOW, MUST NOT BE LESS THAN -10984 M!");
             }
         }
 
         if (MASTER.TypeCount == 0) {
-            AddType(0);
+            AddType();
         } else {
             printf("    CHOOSE TYPE FROM LIST:\n\n");
 
-            ListAllTypes();
+            ListAllTypes("");
             
             RETURN_THREE:
-
-            while (TypeStorage)
 
 
             while (type > count || type < 1)
@@ -337,45 +274,61 @@ int QuickFireMissionPage(void) {
     GridToCoordinates(tempGRID, &x, &y);
     printf("")
 
-}
+} */
 
-int SettingsPage(void) {
+char *SettingsPage(void) {
     
-    printf("\
-    ->->->->->->->->->-> SETTINGS <-<-<-<-<-<-<-<-<-<-\n\
-    \n\
-    ><>< SETTINGS AND THEIR COMMAND ID ><><\n\
-    \n\
-    FORMAT: NAME, VALUE: COMMAND ID\n\
-    \n\
-    VALUE FORMAT: 1 = TRUE, 0 = FALSE\n\
-    \n\
-    ACE3 DRAG,\t%d:\t1\n\
-    ACE3 WEATHER,\t%d:\t2\n\
-    \n\
-    \n\
-    ><>< OTHER COMMANDS ><><\n\
-    \n\
-    RETURN TO DIRECTORY PAGE: 3\n\n", Settings.Ace3Drag, Settings.Ace3Weather);
+    printf("    ->->->->->->->->->-> SETTINGS <-<-<-<-<-<-<-<-<-<-\n\n");
+    printf("    ><>< SETTINGS AND THEIR COMMAND ID ><><\n\n");
+    printf("    FORMAT: NAME, VALUE: COMMAND ID\n\n");
+    printf("    VALUE FORMAT: 1 = TRUE, 0 = FALSE\n\n");
+    printf("    ACE3 DRAG,    %d:    1\n", Settings.Ace3Drag);
+    printf("    ACE3 WEATHER,    %d:    2\n\n\n", Settings.Ace3Weather);
+    printf("    ><>< OTHER COMMANDS ><><\n\n");
+    printf("    GO BACK: 3\n\n");
     
-    int command = EnterCommand(0, 2);
+    int command = EnterCommand(1, 3);
+
+    int value;
 
     switch (command) {
         case 1: 
-            printf("    ENTER NEW VALUE FOR ACE3 DRAG: ");
-            scanf("%d", &Settings.Ace3Drag);
-            printf("\n");
+            
+            while (true) {
+                printf("    ENTER NEW VALUE FOR ACE3 DRAG: ");
+                scanf("%d", &value);
+
+                if (value != 1 || value != 0) {
+                    printf("    ERROR: VALUE MUST BE EITHER 1 OR 0!\n\n");
+                } else {
+                    Settings.Ace3Drag = value;
+                }
+            }
+
+            printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
             SettingsPage();
+
         case 2:
-            printf("    ENTER NEW VALUE FOR ACE3 WEATHER: ");
-            scanf("%d", &Settings.Ace3Weather);
-            printf("\n");
+            
+            while (true) {
+                printf("    ENTER NEW VALUE FOR ACE3 WEATHER: ");
+                scanf("%d", &value);
+
+                if (value =! 1 || value != 0) {
+                    printf("    ERROR: VALUE MUST BE EITHER 1 OR 0!\n\n");
+                } else {
+                    Settings.Ace3Weather = value;
+                }
+            }
+
+            printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
             SettingsPage();
-        case 3: DirectoryPage();
+
+        case 3: return "Directory";
     }
 }
 
-int StoragePage(void) {
+char *StoragePage(void) {
 
     printf("\
     ->->->->->->->->->-> STORAGE <-<-<-<-<-<-<-<-<-<-\n\
@@ -386,19 +339,19 @@ int StoragePage(void) {
     GUN STORAGE: 2\n\
     TARGET STORAGE: 3\n\
     \n\
-    RETURN TO DIRECTORY PAGE: 4\n\n");
+    GO BACK: 4\n\n");
 
     int command = EnterCommand(1, 4);
 
     switch (command) {
-        case 1: TypeStoragePage();
-        case 2: GunStoragePage();
-        case 3: TargetStoragePage();
-        case 4: DirectoryPage();
+        case 1: return "TypeStorage";
+        case 2: return "GunStorage";
+        case 3: return "TargetStorage";
+        case 4: return "Directory";
     }
 }
 
-int TypeStoragePage(void) {
+char *TypeStoragePage(void) {
     
     printf("\
     ->->->->->->->->->-> GUN TYPES <-<-<-<-<-<-<-<-<-<-\n\
@@ -413,15 +366,16 @@ int TypeStoragePage(void) {
 
         printf("    ><>< COMMANDS ><><\n\n");
         printf("    ADD GUN TYPE: 1\n\n");
-        printf("    RETURN TO DIRECTORY PAGE: 2\n");
+        printf("    GO BACK: 2\n");
 
         int command = EnterCommand(1, 2);
 
         switch (command) {
             case 1: 
                 AddType();
-                StoragePage();
-            case 2: DirectoryPage();
+                printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+                TypeStoragePage();
+            case 2: return "Storage";
         }
     } else {
 
@@ -440,47 +394,100 @@ int TypeStoragePage(void) {
         printf("    ADD AMMO CHARGE: 7\n");
         printf("    EDIT AMMO CHARGE: 8\n");
         printf("\n");
-        printf("    RETURN TO STORAGE PAGE: 9\n");
-        printf("    RETURN TO DIRECTORY PAGE: 10\n");
+        printf("    GO BACK: 9\n");
 
-        int command = EnterCommand(1, 10);
+        int command = EnterCommand(1, 9);
+
+        int type, ammo, charge, len, test;
+        long int AirFriction;
+        char TypeName[50], AmmoName[50], Answer;
 
         switch (command) {
             case 1: // Add gun type
                 AddType();
+                printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
                 TypeStoragePage();
+
             case 2: // Remove gun type
-            case 3: // Edit gun type name
-                int type = EnterType();
-
-                char TypeName;
-
+                
                 while (true) {
-                    printf("    ENTER NEW TYPE NAME (MAX 50 CHARACTERS): ");
-                    fgets(TypeName, sizeof(TypeName), stdin);
+                    type = EnterType();
 
-                    size_t len = strlen(TypeName);
-                    if (len > 0 && TypeName[len - 1] == '\n') {
-                        TypeName[len - 1] = '\0';
+                    while (true) {
+                        printf("    ARE YOU SURE YOU WISH TO REMOVE %s? (Y/N): ", MASTER.Types[type - 1].Name);
+                        scanf("%c", &Answer);
+
+                        if (Answer == 'Y') {
+                            break;
+                        } else if (Answer != 'N') {
+                            printf("    ERROR: ANSWER WAS NOT Y OR N!\n\n");
+                        } else {
+                            break;
+                        }
                     }
-
-                    printf("    NEW STORED TYPE NAME: %s\n", TypeName);
-                    pritnf("    IS THE NEW STORED NAME CORRECT? (Y/N): ");
-                    scanf("%c", &Answer);
-                    printf("\n");
 
                     if (Answer == 'Y') {
                         break;
                     }
                 }
 
-                MASTER.Types[type - 1].Name = TypeName;
-                TypeStoragePage();
-            case 4: // Add ammo type to gun type
-                int type = EnterType();
-                AddAmmo(type);
+                // Remove type
+                strcpy(MASTER.Types[type - 1].Name, '\0');
 
-                char Answer;
+                for (int i = 0; i < MASTER.Types[type - 1].AmmoCount; i++) {
+                    strcpy(MASTER.Types[type - 1].Ammo[i].Name, '\0');
+                    MASTER.Types[type - 1].Ammo[i].AirFriction = 0;
+
+                    for (int n = 0; n < MASTER.Types[type - 1].Ammo[i].ChargeCount; n++) {
+                        MASTER.Types[type - 1].Ammo[i].Charge[n] = 0;
+                        MASTER.Types[type - 1].Ammo[i].ChargeMaxRange[n] = 0;
+                    }
+                }
+
+                MASTER.Types[type - 1].AmmoCount = 0;
+                
+                // Move back all other types one place if they had
+                // a larger id than the removed type so no gaps exist.
+                for (int i = type; i < MASTER.TypeCount; i++) {
+                    MASTER.Types[i - 1] = MASTER.Types[i];
+                }
+
+                printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+                TypeStoragePage();
+
+            case 3: // Edit gun type name
+                type = EnterType();
+
+                while (true) {
+                    printf("    ENTER NEW TYPE NAME (MAX 50 CHARACTERS): ");
+                    fgets(TypeName, sizeof(TypeName), stdin);
+
+                    len = strlen(TypeName);
+                    if (len > 0 && TypeName[len - 1] == '\n') {
+                        TypeName[len - 1] = '\0';
+                    }
+
+                    printf("    NEW STORED TYPE NAME: %s\n", TypeName);
+                    printf("    IS THE NEW STORED NAME CORRECT? (Y/N): ");
+                    scanf("%c", &Answer);
+                    printf("\n");
+
+                    if (Answer == 'Y') {
+                        break;
+                    } else if (Answer != 'N') {
+                        printf("    ERROR: ANSWER WAS NOT Y OR N!\n\n");
+                    }
+                }
+
+                strcpy(MASTER.Types[type - 1].Name, TypeName);
+
+                printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+                TypeStoragePage();
+
+            case 4: // Add ammo type to gun type
+                type = EnterType();
+
+                AddAmmo(type);
 
                 while (true) {
                     
@@ -496,24 +503,24 @@ int TypeStoragePage(void) {
                     }   
                 }
 
+                printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
                 TypeStoragePage();
-            case 5: // Edit ammo type name
-                int type = EnterType();
-                int ammo = EnterAmmo();
 
-                char AmmoName[50];
+            case 5: // Edit ammo type name
+                type = EnterType();
+                ammo = EnterAmmo(type);
 
                 while (true) {
                     printf("    ENTER NEW AMMO TYPE NAME (MAX 50 CHARACTERS): ");
                     fgets(AmmoName, sizeof(AmmoName), stdin);
 
-                    size_t len = strlen(AmmoName);
+                    len = strlen(AmmoName);
                     if (len > 0 && AmmoName[len - 1] == '\n') {
                         AmmoName[len - 1] = '\0';
                     }
 
                     printf("    NEW STORED AMMO TYPE NAME: %s\n", AmmoName);
-                    pritnf("    IS THE NEW STORED NAME CORRECT? (Y/N): ");
+                    printf("    IS THE NEW STORED NAME CORRECT? (Y/N): ");
                     scanf("%c", &Answer);
                     printf("\n");
 
@@ -522,41 +529,58 @@ int TypeStoragePage(void) {
                     }
                 }
 
-                MASTER.Types[type - 1].Ammo[ammo - 1].Name = AmmoName;
-                
+                strcpy(MASTER.Types[type - 1].Ammo[ammo - 1].Name, AmmoName);
+
+                printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
                 TypeStoragePage();
+
             case 6: // Edit ammo type air friction
-                int type = EnterType();
-                int ammo = EnterAmmo(type);
+                type = EnterType();
+                
+                while (true) {
+                    ammo = EnterAmmo(type);
 
-                printf("    ENTER NEW AIR FRICTION VALUE: ");
-                scanf("%lf", &MASTER.Types[type - 1].Ammo[ammo - 1].AirFriction);
-                printf("\n");
+                    printf("    ENTER NEW AIR FRICTION VALUE: ");
+                    scanf("%lf", &AirFriction);
+                    printf("\n");
 
+                    if (AirFriction > 0) {
+                        printf("    ERROR: AIR FRICTION MUST BE LESS OR EQUAL TO 0");
+                    } else {
+                        MASTER.Types[type - 1].Ammo[ammo - 1].AirFriction = AirFriction;
+                    }
+                }
+
+                printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
                 TypeStoragePage();
+
             case 7: // Add charge to ammo type
-                int type = EnterType();
-                int ammo = EnterAmmo(type);
-
-                char Answer;
-
-                int test = AddCharge(type, ammo);
+               
+                type = EnterType();
 
                 while (true) {
+                    ammo = EnterAmmo(type);
 
-                    // Charge limit exceeded error
-                    if (test == -1) {
-                        TypeStoragePage();
+                    if (MASTER.Types[type - 1].Ammo[ammo - 1].ChargeCount >= MAX_CHARGES) {
+                        printf("    ERROR: AMMO HAS MAXIMUM AMOUNT OF CHARGES!\n\n");
+                    } else {
+                        break;
                     }
+                }
+
+
+                AddCharge(type, ammo);
+
+                while (true) {
 
                     printf("    DO YOU WISH TO ADD ANOTHER CHARGE? (MAX %d) (Y/N): ", MAX_CHARGES);
                     scanf("%c", &Answer);
                     printf("\n");
 
-                    if (&Answer == 'N') {
+                    if (Answer == 'N') {
                         break;
-                    } else if (&Answer == 'Y') {
-                        test = AddCharge(type, ammo);
+                    } else if (Answer == 'Y') {
+                        AddCharge(type, ammo);
                     } else {
                         printf("    ERROR: ANSWER WAS NOT Y OR N!\n\n");
                     }
@@ -564,10 +588,10 @@ int TypeStoragePage(void) {
                 }
 
                 TypeStoragePage();
+
             case 8: // Edit ammo type charge
-                int type = EnterType();
-                int ammo = EnterAmmo(type);
-                int charge;
+                type = EnterType();
+                ammo = EnterAmmo(type);
 
                 while (true) {
                     printf("    ENTER CHARGE: ");
@@ -585,15 +609,14 @@ int TypeStoragePage(void) {
                 scanf("%lf", &MASTER.Types[type - 1].Ammo[ammo - 1].Charge[charge - 1]);
 
                 TypeStoragePage();
-            case 9: // Return to storage page
-                StoragePage();
-            case 10: // Return to directory page
-                DirectoryPage();
+
+            case 9:
+                return "Storage";
         }
     }
 }
 
-int GunStoragePage(void) {
+char *GunStoragePage(void) {
     
     printf("\
     ->->->->->->->->->-> GUNS <-<-<-<-<-<-<-<-<-<-\n\
@@ -606,36 +629,33 @@ int GunStoragePage(void) {
         printf("    ARE DEFINED NOR CAN NEW GUNS BE DEFINED\n");
         printf("\n");
         printf("    ><>< COMMANDS ><><\n\n");
-        printf("    GO TO TYPE STORAGE PAGE: 1");
-        printf("    RETURN TO DIRECTORY PAGE: 2\n");
+        printf("    GO BACK: 1");
 
-        int command = EnterCommand(1, 2);
+        int command = EnterCommand(1, 1);
 
         switch (command) {
-            case 1: 
-                TypeStoragePage();
-            case 2:
-                DirectoryPage();
+            case 1: return "Storage";
         }
+
     } else if (MASTER.GunCount == 0) {
 
         printf("    NO GUNS DEFINED\n");
         printf("\n");
         printf("    ><>< COMMANDS ><><\n\n");
         printf("    ADD GUN: 1\n");
-        printf("    RETURN TO STORAGE PAGE: 2\n");
-        printf("    RETURN TO DIRECTORY PAGE: 3\n");
+        printf("    GO BACK: 2\n");
+        printf("\n");
 
         int command = EnterCommand(1, 2);
 
         switch (command) {
             case 1:
                 AddGun();
+                GunStoragePage();
             case 2: 
-                TypeStoragePage();
-            case 3:
-                DirectoryPage();
+                return "Storage";
         }
+
     } else {
         
         for (int Gun = 0; Gun < MASTER.GunCount; Gun++) {
@@ -651,38 +671,40 @@ int GunStoragePage(void) {
             printf("    REMOVE GUN: 1\n");
             printf("    EDIT GUN GRID: 2\n");
             printf("    EDIT GUN ELEVATION: 3\n");
-            printf("    EDIT GUN TYPE: 4\n")
-            printf("    RETURN TO STORAGE PAGE: 5\n");
-            printf("    RETURN TO DIRECTORY PAGE: 6\n");
+            printf("    EDIT GUN TYPE: 4\n");
+            printf("    GO BACK: 5\n");
             printf("\n");
 
-            command = EnterCommand(1, 6) + 1;
+            command = EnterCommand(1, 5) + 1;
         } else {
             printf("    ><>< COMMANDS ><><\n\n");
             printf("    ADD GUN: 1\n");
             printf("    REMOVE GUN: 2\n");
             printf("    EDIT GUN GRID: 3\n");
             printf("    EDIT GUN ELEVATION: 4\n");
-            printf("    EDIT GUN TYPE: 5\n")
-            printf("    RETURN TO STORAGE PAGE: 6\n");
-            printf("    RETURN TO DIRECTORY PAGE: 7\n");
+            printf("    EDIT GUN TYPE: 5\n");
+            printf("    GO BACK: 6\n");
             printf("\n");
 
-            command = EnterCommand(1, 7);
+            command = EnterCommand(1, 6);
         }
+
+        int GunID, type, len;
+        long int Elevation, x, y;
+        char Grid[10], Answer;
 
         switch (command) {
             case 1: // Add gun
                 AddGun();
                 GunStoragePage();
+
             case 2: // Remove gun
                 RemoveGun();
                 GunStoragePage();
-            case 3: // Edit gun grid
-                int GunID = EnterGunID();
 
-                char Grid[10];
-                char Answer;
+            case 3: // Edit gun grid
+                
+                GunID = EnterGunID();
 
                 while (true) {
                     printf("    ENTER NEW GRID FOR GUN %d (MAX 10 DIGITS, MIN 2 DIGITS): ", GunID);
@@ -699,33 +721,168 @@ int GunStoragePage(void) {
                     }
                 }
 
-                long int x, y;
-
                 GridToCoordinates(Grid, &x, &y);
 
-                MASTER.Gun[GunID - 1] = (struct Gun) {x, y, MASTER.Gun[GunID - 1].z, MASTER.Gun[GunID - 1].type};
+                MASTER.Gun[GunID - 1] = (struct Gun) {x, y, MASTER.Gun[GunID - 1].z, MASTER.Gun[GunID - 1].Type};
 
                 GunStoragePage();
+
             case 4: // Edit gun elevation
+                GunID = EnterGunID();
+                
+                printf("    ENTER NEW ELEVATION FOR GUN %d: ", GunID);
+                scanf("%ld", &Elevation);
+
+                MASTER.Gun[GunID - 1].z = Elevation;
+
+                GunStoragePage();
 
             case 5: // Edit gun type
+                GunID = EnterGunID();
 
-            case 6: // Return to storage page
-                TypeStoragePage();
-            case 7: // Return to directory page
-                DirectoryPage();
+                ListAllTypes("");
+                type = EnterType();
+
+                MASTER.Gun[GunID - 1].Type = type - 1;
+
+                GunStoragePage();
+
+            case 6:
+                return "Storage";
         }
     }
 }
 
-int TargetStoragePage(void) {
+char *TargetStoragePage(void) {
 
 }
 
-int FireMissionPage(void) {
+char *FireMissionPage(void) {
 
 }
 
-int GuidePage(void) {
+char *GuidePage(void) {
 
+}
+
+void initStorage(void) {
+
+    //Initialize all values to either 0, for numbers, or \0, for strings.
+    
+    MASTER.TypeCount = 0;
+
+    for (int Type = 0; Type < MAX_TYPES; Type++) {
+        strcpy(MASTER.Types[Type].Name, "\0");
+        MASTER.Types[Type].AmmoCount = 0;
+
+        for (int Ammo = 0; Ammo < MAX_AMMO; Ammo++) {
+            strcpy(MASTER.Types[Type].Ammo[Ammo].Name, "\0");
+            MASTER.Types[Type].Ammo[Ammo].AirFriction = 0;
+            MASTER.Types[Type].Ammo[Ammo].ChargeCount = 0;
+
+            for (int Charge = 0; Charge < MAX_CHARGES; Charge++) {
+                MASTER.Types[Type].Ammo[Ammo].Charge[Charge] = 0;
+                MASTER.Types[Type].Ammo[Ammo].ChargeMaxRange[Charge] = 0;
+            }
+        }
+    }
+
+    MASTER.TargetCount = 0;
+
+    for (int Target = 0; Target < MAX_TARGETS; Target++) {
+        
+        MASTER.Target[Target] = (struct Target) {0, 0, 0};
+    }
+
+    MASTER.GunCount = 0;
+
+    for (int Gun = 0; Gun < MAX_GUNS; Gun++) {
+        
+        MASTER.Gun[Gun] = (struct Gun) {0, 0, 0, 0};
+    }    
+
+    MASTER.GunGroupCount = 0;
+
+    for (int GunGroup = 0; GunGroup < MAX_GUN_GROUPS; GunGroup++) {
+        for (int GunID = 0; GunID < MAX_GUNS; GunID++) {
+            MASTER.GunGroup[GunGroup].GunID[GunID] = 0;
+        }
+    }
+
+    MASTER.TargetGroupCount = 0;
+
+    for (int TargetGroup = 0; TargetGroup < MAX_TARGET_GROUPS; TargetGroup++) {
+        for (int TargetID = 0; TargetID < MAX_TARGETS; TargetID++) {
+            MASTER.TargetGroup[TargetGroup].TargetID[TargetID] = 0;
+        }
+    }
+}
+
+void PageMachine(char *Page) {
+    
+    int number = StrToInt(Page);
+
+    // The number used as the case is the sum of the ASCII 
+    // decimal value of the characters in the page name without the 'Page' part
+    switch (number) {
+        
+        // "Intro"
+        case 524:  Page = introPage();
+                   break;
+
+        // "Directory"
+        case 949:  Page = DirectoryPage();
+                   break;
+
+        // "QuickFireMission"
+        //case 1637: Page = QuickFireMissionPage();
+        //           break;
+           
+        // "Settings"
+        case 849:  Page = SettingsPage();
+                   break;
+
+        // "Storage"
+        case 725:  Page = StoragePage();
+                   break;
+
+        // "TypeStorage"
+        case 1143: Page = TypeStoragePage();
+                   break;
+
+        // "GunStorage"
+        case 1023: Page = GunStoragePage();
+                   break;
+
+        // "TargetStorage"
+        case 1340: Page = TargetStoragePage();
+                   break;
+
+        // "FireMission"
+        case 1128: Page = FireMissionPage();
+                   break;
+
+        // "Guide"
+        case 494:  Page = GuidePage();
+                   break;
+    }
+
+    NextPage = Page;
+}
+
+int main(void) {
+
+    initStorage();
+
+    PageMachine("Intro");   
+
+    while (true) {
+
+        printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+
+        PageMachine(NextPage);
+
+    }
+
+    return 0;
 }
