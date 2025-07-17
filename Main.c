@@ -74,11 +74,11 @@ struct Settings {
     int Ace3Weather;
 } Settings;
 
-#include "include\Tools.c"
-#include "include\TypeManipulation.c"
-#include "include\TypeAccess.c"
-#include "include\GunManipulation.c"
-#include "include\TargetManipulation.c"
+#include "include\Tools.h"
+#include "include\TypeManipulation.h"
+#include "include\TypeAccess.h"
+#include "include\GunManipulation.h"
+#include "include\TargetManipulation.h"
 
 char *NextPage = NULL;
 
