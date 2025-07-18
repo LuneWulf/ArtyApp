@@ -1,5 +1,7 @@
 int AddGun(void) {
     
+    clear();
+
     // Adds a new gun to the end of the Type's gun array.
 
     if (MASTER.GunCount >= MAX_GUNS) {
@@ -11,13 +13,15 @@ int AddGun(void) {
 
     while (true) {
         printf("    ENTER GUN GRID (MAX 10 DIGITS, MIN 2 DIGITS): ");
-        scanf("%s" &Grid);
+        scanf("%c", Grid);
+        clear();
 
         while (true) {
             printf("    CONFIRM GRID %s IS CORRECT (Y/N):", Grid);
             scanf("%c", &Answer);
+            clear();
 
-            if (Answer = 'Y') {
+            if (Answer == 'Y') {
                 break;
             } else if (Answer == 'N') {
                 break;
@@ -35,13 +39,15 @@ int AddGun(void) {
 
     while (true) {
         printf("    ENTER GUN ELEVATION: ");
-        scanf("%ld" &Elevation);
+        scanf("%ld", &Elevation);
+        clear();
 
         while (true) {
             printf("    CONFIRM ELEVATION %ld IS CORRECT (Y/N):", Elevation);
             scanf("%c", &Answer);
+            clear();
 
-            if (Answer = 'Y') {
+            if (Answer == 'Y') {
                 break;
             } else if (Answer == 'N') {
                 break;
@@ -59,13 +65,15 @@ int AddGun(void) {
 
     while (true) {
         printf("    ENTER GUN TYPE: ");
-        scanf("%d" &Type);
+        scanf("%d", &Type);
+        clear();
 
         while (true) {
             printf("    CONFIRM GUN TYPE %d IS CORRECT (Y/N):", Type);
             scanf("%c", &Answer);
+            clear();
 
-            if (Answer = 'Y') {
+            if (Answer == 'Y') {
                 break;
             } else if (Answer == 'N') {
                 break;
@@ -83,62 +91,10 @@ int AddGun(void) {
 
     GridToCoordinates(Grid, &x, &y);
     
-    MASTER.Gun[MASTER.GunCount] = (struct Gun) {x, y, Elevation, Type};
+    MASTER.Gun[MASTER.GunCount] = (struct Gun) {'\0', x, y, Elevation, Type};
+    strcpy(MASTER.Gun[MASTER.GunCount].Grid, Grid);
 
     MASTER.GunCount++;
-
-    return 0;
-}
-
-int RemoveGun(void) {
-    
-    int GunID;
-    char Answer;
-
-    while (true) {
-        while (true) {
-            printf("    ENTER ID OF GUN BEING REMOVED: ");
-            scanf("%d", &GunID);
-
-            if (GunID < 1 || GunID > MASTER.GunCount) {
-                printf("    ERROR: GUN NOT DEFINED\n\n")
-            } else {
-                break;
-            }
-        }
-
-        printf("    CONFIRM REMOVE GUN %d (Y/N): ", GunID);
-        scanf("%c", &Answer);
-
-        if (Answer == 'Y') {
-            break;
-        } else if (Answer != 'N') {
-            printf("    ERROR: ANSWER WAS NOT Y OR N!\n\n");
-        }
-    }
-
-    if (GunID < MASTER.GunCount) {
-
-        // Remove gun with specified ID, then move guns with a greater ID down 1 ID.
-        // Ensures no blank spaces in the gun storage.
-
-        MASTER.Gun[GunID - 1] = (struct Gun) {0, 0, 0, 0};
-
-        for (int Gun = GunID; Gun < MASTER.GunCount; Gun++) {
-            
-            MASTER.Gun[Gun - 1] = MASTER.Gun[Gun];
-        }
-
-        MASTER.GunCount--;
-
-    } else {
-
-        // If the gun is at the end of the storage, then just remove it and continue.
-
-        MASTER.Gun[GunID - 1] = (struct Gun) {0, 0, 0, 0};
-
-        MASTER.GunCount--;
-    }
 
     return 0;
 }
