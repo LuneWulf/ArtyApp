@@ -7,7 +7,7 @@
 
 
 
-// Additional #includes are located at line 79 and 99 due to the functions in them using the MASTER struct.
+// Additional #includes are located at line 89 and 111 due to the functions in them using the MASTER struct.
 
 
 #define MAX_TYPES 25
