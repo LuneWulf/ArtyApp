@@ -1,195 +1,52 @@
-int AddCharge(int Type, int Ammo) {
+int ListAllAmmo(int Type) {
 
-    if (MASTER.Types[Type - 1].Ammo[Ammo - 1].ChargeCount >= MAX_CHARGES) {
-        return -1; // ERROR: CHARGE LIMIT EXCEEDED
+    // Ammo types are listed in series but with IDs starting from 1 NOT 0.
+
+    if (MASTER.Types[Type - 1].AmmoCount == 0) {
+        return -1; // ERROR: No ammo defined for the type.
     }
 
-    long int MuzzleVelocity;
-
-    while (true) {
-        printf("    ENTER CHARGE %d MUZZLE VELOCITY: ", MASTER.Types[Type - 1].Ammo[Ammo - 1].ChargeCount);
-        scanf("&ld", &MuzzleVelocity); 
-
-        if (MuzzleVelocity <= 0) {
-            printf("    ERROR: INVALID CHARGE MUZZLE VELOCITY!\n");
-        } else {
-            break;
-        }
+    for (int Ammo = 0; Ammo < MASTER.Types[Type - 1].AmmoCount; Ammo++) {
+        printf("        AMMO NAME: %s, AMMO ID: %d, AMMO CHARGE COUNT: %d\n", MASTER.Types[Type - 1].Ammo[Ammo].Name, Ammo + 1, MASTER.Types[Type - 1].Ammo[Ammo].ChargeCount);
     }
 
-    MASTER.Types[Type - 1].Ammo[Ammo - 1].ChargeCount++;
+    printf("\n");
 
     return 0;
 }
 
-int AddAmmo(int Type) {
+int ListAllTypes(int Set) {
+
+    // Types are listed in series but with IDs starting from 1 NOT 0.
     
-    // Adds a new ammo type at the end of the type's ammo array,
-    // then adds at least 1 charge.
-
-    if (MASTER.Types[Type - 1].AmmoCount == MAX_AMMO) {
-        return -1; // ERROR: Ammo limit exceeded
+    if (MASTER.TypeCount == 0) {
+        return - 1; // ERROR: No types defined.
     }
-    
-    double AirFriction;
 
-    char AmmoName[50];
-
-    char Answer;
-
-    while (true) {
-        printf("    ENTER AMMO NAME (MAX 50 CHARACTERS): ");
-        fgets(AmmoName, sizeof(AmmoName), stdin);
-
-        size_t len = strlen(AmmoName);
-        if (len > 0 && AmmoName[len - 1] == '\n') {
-            AmmoName[len - 1] = '\0';
-        }
-
-        printf("    STORED AMMO NAME: %s\n", AmmoName);
-        printf("    IS THE STORED NAME CORRECT? (Y/N): ");
-        scanf("%c", &Answer);
-        printf("\n");
-
-        if (Answer == 'Y') {
-            break;
+    for (int Type = 0; Type < MAX_TYPES && MASTER.Types[Type].AmmoCount != 0; Type++) {
+        printf("    TYPE NAME: %s, TYPE ID: %d, TYPE AMMO COUNT: %d\n", MASTER.Types[Type].Name, Type + 1, MASTER.Types[Type].AmmoCount);
+        if (Set == 1) {
+            ListAllAmmo(Type + 1);
         }
     }
 
-    strcpy(MASTER.Types[Type - 1].Ammo[MASTER.Types[Type - 1].AmmoCount].Name, AmmoName);
+    printf("\n");
 
-    while (true) {
-        printf("    ENTER AMMO AIR FRICTION: ");
-        scanf("%lf", &AirFriction);
-
-        printf("    STORED AMMO AIR FRICTION: %lf\n", AirFriction);
-        printf("    IS THE STORED AMMO AIR FRICTION CORRECT? (Y/N): ");
-        scanf("%c", &Answer);
-        printf("\n");
-
-        if (AirFriction <= 0 && Answer == 'Y') {
-            break;
-        } else if (Answer == 'Y') {
-            printf("    ERROR: AIR FRICTION MUST BE LESS THAN OR EQUAL TO 0\n");
-        } else {
-            printf("    ERROR: ANSWER ")
-        }
-    }
-
-    MASTER.Types[Type - 1].Ammo[MASTER.Types[Type - 1].AmmoCount].AirFriction = AirFriction;
-
-    int ChargeCount;
-
-    printf("\n    NOW DEFINE CHARGE VELOCITIES, MAX 20 CHARGES!\n");
-    printf("    TO STOP DEFINING CHARGES ENTER -1 INSTEAD OF A VELOCITY\n");
-    printf("    MINIMUM OF 1 CHARGE:\n\n");
-
-    for (int i = 0; i < 20; i++, ChargeCount++) {
-        
-        long int TempVel = 0;
-
-        while (true) {
-            printf("    ENTER CHARGE %d MUZZLE VELOCITY: ", i+1);
-            scanf("%ld", &TempVel);
-
-            if (i != 0 && TempVel == -1) {
-                break;
-            } else if (TempVel <= 0) {
-                printf("    ERROR: INVALID CHARGE MUZZLE VELOCITY!\n");
-            } else {
-                break;
-            }
-        }
-
-        MASTER.Types[Type - 1].Ammo[MASTER.Types[Type - 1].AmmoCount].Charge[i] = TempVel;
-    }
-
-    MASTER.Types[Type - 1].AmmoCount++;
+    return 0;
 }
 
-int AddType(void) {
+int ListCharges(int Type, int Ammo) {
 
-    // Adds a new type at the end of the Type array,
-    // then adds at least 1 ammo type with at least 1 charge.
+    // Ammo types are listed in series but with IDs starting from 1 NOT 0.
 
-    if (MASTER.TypeCount == MAX_TYPES) {
-        return -1; // ERROR: Max amount of types reached
+    if (MASTER.Types[Type].AmmoCount == 0) {
+        return -1; // ERROR: No ammo defined for the type therefore no charges exist.
+                   //        However, there will always be at least 1 charge for a defined ammo.
+    }
+    
+    for (int Charge = 0; Charge < MAX_CHARGES && MASTER.Types[Type - 1].Ammo[Ammo - 1].Charge[Charge] != 0; Charge++) {
+        printf("        CHARGE: %d, MAX RANGE: %ld\n", Charge + 1, MASTER.Types[Type - 1].Ammo[Ammo - 1].ChargeMaxRange[Charge]);
     }
 
-    char TypeName[50];
-
-    char Answer;
-
-    while (true) {
-        printf("    ENTER TYPE NAME (MAX 50 CHARACTERS): ");
-        fgets(TypeName, sizeof(TypeName), stdin);
-
-        size_t len = strlen(TypeName);
-        if (len > 0 && TypeName[len - 1] == '\n') {
-            TypeName[len - 1] = '\0';
-        }
-
-        printf("    STORED TYPE NAME: %s\n", TypeName);
-        pritnf("    IS THE STORED NAME CORRECT? (Y/N): ");
-        scanf("%c", &Answer);
-        printf("\n");
-
-        if (Answer == 'Y') {
-            break;
-        }
-    }
-
-    strcpy(MASTER.Types[MASTER.TypeCount].Name, TypeName);
-
-    printf("\n    DEFINE A NEW AMMO TYPE FOR THE NEW TYPE:\n");
-
-    AddAmmo(MASTER.TypeCount);
-
-    char Answer;
-
-    while (true) {
-        printf("    DO YOU WISH TO ADD ANOTHER AMMO TYPE? (Y/N): ");
-        scanf("%c", &Answer);
-        printf("\n");
-
-        if (Answer == 'Y' || Answer == 'N') {
-            break;
-        } else {
-            printf("    ERROR: ANSWER WAS NOT Y OR N!\n\n");
-        }        
-    }
-
-    for (int i = 0; i < 4 && Answer == 'Y'; i++) {
-        
-        while(getchar() != '\n');
-        AddAmmo(MASTER.TypeCount);
-
-        while (true) {
-            printf("    DO YOU WISH TO ADD ANOTHER AMMO TYPE? (Y/N): ");
-            scanf("%c", &Answer);
-            printf("\n");
-
-            if (Answer == 'Y') {
-                AddAmmo(MASTER.TypeCount);
-            } else if (Answer == 'N') {
-                break;
-            } else {
-                printf("    ERROR: ANSWER WAS NOT Y OR N!\n\n");
-            }        
-        }
-    }
-
-    MASTER.TypeCount++;
-}
-
-int ChargeMaxRange(int type, int ammo, int charge) {
-
-    long int MaxRange;
-
-    // Call function for ballistics simulator at angle of 45 deg.
-    // IRL max range does not occur at 45 deg, bur normally around 30 deg,
-    // but this does not apply to ARMA 3 with and without ACE 3 physics.
-
-    MASTER.Types[type - 1].Ammo[ammo - 1].ChargeMaxRange[charge - 1] = MaxRange;
-
+    return 0;
 }
