@@ -1,20 +1,21 @@
-
 int ListAllAmmo(int Type) {
 
     // Ammo types are listed in series but with IDs starting from 1 NOT 0.
 
-    if (MASTER.Types[Type].AmmoCount == 0) {
+    if (MASTER.Types[Type - 1].AmmoCount == 0) {
         return -1; // ERROR: No ammo defined for the type.
     }
 
     for (int Ammo = 0; Ammo < MASTER.Types[Type - 1].AmmoCount; Ammo++) {
-        printf("    AMMO NAME: %s, AMMO ID: %d\n\n", MASTER.Types[Type - 1].Ammo[Ammo].Name, Ammo + 1);
+        printf("        AMMO NAME: %s, AMMO ID: %d, AMMO CHARGE COUNT: %d\n", MASTER.Types[Type - 1].Ammo[Ammo].Name, Ammo + 1, MASTER.Types[Type - 1].Ammo[Ammo].ChargeCount);
     }
+
+    printf("\n");
 
     return 0;
 }
 
-int ListAllTypes(char *string) {
+int ListAllTypes(int Set) {
 
     // Types are listed in series but with IDs starting from 1 NOT 0.
     
@@ -23,8 +24,8 @@ int ListAllTypes(char *string) {
     }
 
     for (int Type = 0; Type < MAX_TYPES && MASTER.Types[Type].AmmoCount != 0; Type++) {
-        printf("    TYPE NAME: %s,\tTYPE ID: %d\n", MASTER.Types[Type].Name, Type + 1);
-        if (string == "ListAllAmmo") {
+        printf("    TYPE NAME: %s, TYPE ID: %d, TYPE AMMO COUNT: %d\n", MASTER.Types[Type].Name, Type + 1, MASTER.Types[Type].AmmoCount);
+        if (Set == 1) {
             ListAllAmmo(Type + 1);
         }
     }
