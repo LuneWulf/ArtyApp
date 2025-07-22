@@ -1,56 +1,39 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <math.h>
+#include <stdbool.h>
+
+#include "Tools.c"
+#include "Structs.c"
+
+#ifndef TARGETMANIPULATION_H
+
+#define TARGETMANIPULATION_H
+
 void AddTarget(void) {
 
-    long int x, y, z;
-    char Grid[10], Answer;
+    char Grid[11], Answer;
 
-    while (true) {
+    InputString("ENTER TARGET GRID (MAX 10 DIGITS, MIN 2 DIGITS): ", Grid);
 
-        printf("    ENTER TARGET GRID (MAX 10 DIGITS, MIN 2 DIGITS): ");
-        scanf("%10s", &Grid);
-        printf("\n");
+    float z = Inputfloat("ENTER TARGET HEIGHT ASL: ", -1000, 10000);
 
-        clear();
-
-        printf("    IS GRID %s CORRECT? (Y/N): ", &Grid);
-        scanf("%1c", &Answer);
-        printf("\n");
-
-        if (Answer == 'Y') {
-            break;
-        } else if (Answer != 'N') {
-            printf("    ERROR: ANSWER WAS NOT Y OR N!\n\n");
-        }
-    }
-
-    GridToCoordinates(Grid, &x, &y);
-
-    while (true) {
-        printf("    ENTER TARGET ELEVATION (METERS): ");
-        scanf("%ld", &z);
-        printf("\n");
-
-        clear();
-
-        while (true) {
-            printf("    CONFIRM ELEVATION %ld IS CORRECT? (Y/N): ", z);
-            scanf("%1c", &Answer);
-            printf("\n");
-
-            clear();
-
-            if (Answer == 'Y') {
-                break;
-            } else if (Answer != 'N') {
-                printf("    ERROR: ASNWER WAS NOT Y OR N!\n\n");
-            }
-        }
-
-        if (Answer == 'Y') {
-            break;
-        }
-    }
-
-    MASTER.Target[MASTER.TargetCount] = (struct Target) {'\0', x, y, z};
+    MASTER.Target[MASTER.TargetCount] = (struct Target) {'\0', z};
     strcpy(MASTER.Target[MASTER.TargetCount].Grid, Grid);
     MASTER.TargetCount++;
 }
+
+void RemoveTarget(int Target) {
+
+    MASTER.Target[Target - 1] = (struct Target) {0, 0, 0};
+
+    for (int tgt = Target; tgt < MASTER.TargetCount; tgt++) {
+        MASTER.Target[tgt - 1] = MASTER.Target[tgt];
+    }
+
+    MASTER.TargetCount--;    
+
+}
+
+#endif
