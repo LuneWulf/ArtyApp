@@ -1,5 +1,113 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <math.h>
+#include <stdbool.h>
+#include <time.h>
+
+#include "Structs.c"
+
+#ifndef TOOLS_H
+
+#define TOOLS_H
+
+void RecordLog(char *Message) {
+    FILE *fp = fopen("Record.txt", "a");
+    fprintf(fp, Message);
+    fprintf(fp, "\n\n");
+    fclose(fp);
+}
+
 void clear(void) {
     while (getc(stdin) != '\n');
+}
+
+#define InputNum(TYPE, FORMAT)                                                                              \
+TYPE Input##TYPE(char *PrintStatement, TYPE Min, TYPE Max) {                                                \
+    char Answer = 'N';                                                                                      \
+    TYPE Value;                                                                                             \
+    while (Answer != 'Y') {                                                                                 \
+        printf("    %s", PrintStatement);                                                                   \
+        scanf(#FORMAT, &Value);                                                                             \
+        printf("\n");                                                                                       \
+        clear();                                                                                            \
+        if (Value < Min) {                                                                                  \
+            printf("    ERROR: VALUE MUST BE GREATER THAN OR EQUAL TO " #FORMAT "\n\n", Min);               \
+        } else if (Value > Max) {                                                                           \
+            printf("    ERROR: VALUE MUST BE LESS THAN OR EQUAL TO " #FORMAT "\n\n", Max);                  \
+        } else {                                                                                            \
+            while (true) {                                                                                  \
+                printf("    CONFIRM \"" #FORMAT "\" IS CORRECT (Y/N): ", Value);                            \
+                scanf("%1c", &Answer);                                                                      \
+                printf("\n");                                                                               \
+                clear();                                                                                    \
+                if (Answer == 'Y' || Answer == 'N') {                                                       \
+                    break;                                                                                  \
+                } else {                                                                                    \
+                    printf("    ERROR: ANSWER MUST BE Y OR N!\n\n");                                        \
+                }                                                                                           \
+            }                                                                                               \
+        }                                                                                                   \
+    }                                                                                                       \
+    return Value;                                                                                           \
+}
+
+// Inputint(char *PrintStatement, int Min, int Max);
+InputNum(int, %d);
+
+// Inputfloat(char *PrintStatement, float Min, float Max);
+InputNum(float, %f);
+
+// Inputdouble(char *PrintStatement, double Min, double Max);
+InputNum(double, %lf);
+
+void InputString(char *PrintStatement, char *String) {
+    
+    char Answer = 'N';
+
+    while (Answer != 'Y') {
+
+        printf("    %s", PrintStatement);
+        scanf("%s", String);
+        printf("\n");
+
+        clear();
+
+        while (true) {
+
+            printf("    CONFIRM \"%s\" IS CORRECT (Y/N): ", String);
+            scanf("%1c", &Answer);
+            printf("\n");
+
+            clear();
+
+            if (Answer == 'Y') {
+                break;
+            } else if (Answer != 'N') {
+                printf("    ERROR: ANSWER WAS NOT Y OR N!\n\n");
+            }
+        }
+    }
+}
+
+char Confirm(char *PrintStatement) {
+    
+    char Answer = 'N';
+
+    while (Answer != 'Y') {
+        printf("    %s", PrintStatement);
+        scanf("%c", &Answer);
+        printf("\n");
+        clear();
+
+        if (Answer != 'Y' && Answer != 'N') {
+            printf("    ERROR: ANSWER WAS NOT Y OR N!\n\n");
+        } else {
+            break;
+        }  
+    }
+
+    return Answer;
 }
 
 float power(float x, int y) {
@@ -114,41 +222,31 @@ void DisMillsToCoordinates(int distance, int direction, char *CurrentGrid, long 
     *y += round(sin(radians) * (double) distance);
 }
 
-long int MillsFromCoordinate(long int dx, long int dy) {
+float MillsFromCoordinate(long int dx, long int dy) {
     
-    long int mills = (atan((double) dy / (double) dx) * 6400) / (2 * M_PI);
+    float mills = (atan((float) dx / (float) dy) * 6400) / (2 * M_PI);
 
-    if (dx < 0) {
-        if (mills < 0) {
-            mills += 6400;
-        } else {
-            mills += 3200;
-        }
-    } else if (dx > 0) {
-        if (mills < 0) {
-            mills += 3200;
-        }
-    } else {
-        if (mills < 0) {
-            mills += 6400;
-        }
+    if (dy < 0) {
+        mills += 3200;
+    } else if (dx < 0 && dy >= 0) {
+        mills += 6400;
     }
 
-    return mills;
+    return round(mills);
 }
 
-void GridsToDisMills(char *GridOne, char *GridTwo, long int *Distance, long int *Direction) {
+void GridsToDisMills(char *GridOne, char *GridTwo, float *Distance, float *Direction) {
     long int x_1, x_2, y_1, y_2;
 
     GridToCoordinates(GridOne, &x_1, &y_1);
     GridToCoordinates(GridTwo, &x_2, &y_2);
 
-    *Distance = hypot((double) (x_1 - x_2), (double) (y_1 - y_2));
+    *Distance = hypot((double) (x_2 - x_1), (double) (y_2 - y_1));
 
-    *Direction = MillsFromCoordinate(x_1 - x_2, y_1 - y_2);
+    *Direction = MillsFromCoordinate(x_2 - x_1, y_2 - y_1);
 }
 
-void save(void) {
+void Save(void) {
 
     FILE *fp = fopen("Types&Ammo.dat", "w+");
     
@@ -156,7 +254,7 @@ void save(void) {
 
 }
 
-void load(void) {
+void Load(void) {
 
     FILE *fp = fopen("Types&Ammo.dat", "r+");
     
@@ -183,120 +281,4 @@ int ExitWithoutSaving(void) {
     }
 }
 
-int EnterCommand(int Min, int Max) {
-    
-    // Prompts the user for a command and then
-    // verifies that the command is in the defined range.
-
-    int command;
-
-    while (true) {
-        printf("    ENTER COMMAND: ");
-        scanf("%d", &command);
-        printf("\n");
-
-        if (command >= Min && command <= Max) {
-            break;
-        } else {
-            printf("    ERROR: COMMAND OUT OF RANGE RETRY!\n\n");
-        }
-    }
-
-    return command;
-}
-
-int EnterType() {
-
-    // Prompts the user for a type and then
-    // verifies that the type is defined.
-
-    clear();
-
-    int type;
-
-    while (true) {
-        printf("    ENTER GUN TYPE ID: ");
-        scanf("%d", &type);
-        printf("\n");
-
-        if (type >= 1 && type <= MASTER.TypeCount) {
-            break;
-        } else {
-            printf("    ERROR: GUN TYPE NOT DEFINED\n\n");
-        }
-    }
-
-    return type;
-}
-
-int EnterAmmo(int type) {
-    
-    // Prompts the user for an ammo type and then
-    // verifies that the ammo type is defined.
-
-    clear();
-
-    int ammo;
-
-    while (true) {
-        printf("    ENTER AMMO TYPE ID: ");
-        scanf("%d", &ammo);
-        printf("\n");
-
-        if (ammo >= 1 && ammo <= MASTER.Types[type - 1].AmmoCount) {
-            break;
-        } else {
-            printf("    ERROR: AMMO TYPE NOT DEFINED\n\n");
-        }
-    }
-
-    return ammo;
-}
-
-int EnterGunID() {
-
-    // Prompts the user for a gun ID and then
-    // verifies that the gun ID is defined.
-
-    clear();
-
-    int GunID;
-
-    while (true) {
-        printf("    ENTER GUN ID: ");
-        scanf("%d", &GunID);
-        printf("\n");
-
-        if (GunID >= 1 && GunID <= MASTER.GunCount) {
-            break;
-        } else {
-            printf("    ERROR: GUN NOT DEFINED\n\n");
-        }
-    }
-
-    return GunID;    
-}
-
-int EnterTargetID() {
-
-    // Prompts the user for a target ID and then
-    // verifies that the target ID is defined.
-
-    clear();
-
-    int TargetID;
-
-    while (true) {
-        printf("    ENTER TARGET ID: ");
-        scanf("%d", &TargetID);
-        printf("\n");
-
-        if (TargetID >= 1 && TargetID <= MASTER.TargetCount) {
-            break;
-        } else {
-            printf("    ERROR: TARGET NOT DEFINED\n\n");
-        }
-    }
-
-    return TargetID;    
-}
+#endif
